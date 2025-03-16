@@ -1,161 +1,196 @@
 <script lang="ts">
-  let userInput: string = ''; // Stores the user's input
-  let messages: Array<{ role: string; content: string }> = []; // Stores the chat history
-  let isSending: boolean = false; // Tracks if a request is in progress
-  let isTyping: boolean = false; // Tracks if the AI is typing
+  import { onMount } from 'svelte';
+
+  // State for user input and chat messages
+  let userInput: string = '';
+  let messages: Array<{
+    role: string;
+    content: string;
+    timestamp: string;
+  }> = [];
+  let isSending: boolean = false;
+  let isTyping: boolean = false;
+
+  // Initialize chat with a generic greeting (backend will personalize)
+  onMount(() => {
+    messages = [
+      {
+        role: 'assistant',
+        content: 'Greetings! I am your AI assistant. How can I assist you today?',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 15.03.25',
+      },
+    ];
+  });
 
   async function sendMessage() {
-    if (!userInput.trim() || isSending) return; // Ignore empty input or if a request is already in progress
+    if (!userInput.trim() || isSending) return;
 
-    isSending = true; // Disable the send button
-    isTyping = true; // Show typing indicator
+    isSending = true;
+    isTyping = true;
+
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 15.03.25';
 
     try {
-      // Add the user's message to the chat history
-      messages = [...messages, { role: 'Master', content: userInput }];
+      // Add user's message to the chat
+      messages = [...messages, { role: 'Master', content: userInput, timestamp }];
 
-      // Send the user's message to the backend API
+      // Send the user's message to the backend
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userInput }),
+        body: JSON.stringify({
+          message: userInput,
+        }),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      // Parse the AI's response
       const data = await response.json();
       const aiMessage = data.message.content;
 
-      // Add the AI's response to the chat history
-      messages = [...messages, { role: 'assistant', content: aiMessage }];
+      // Add AI's response to the chat
+      messages = [...messages, { 
+        role: 'assistant', 
+        content: aiMessage, 
+        timestamp,
+      }];
     } catch (error) {
-      console.error("Error sending message:", error);
-      // Show an error message in the chat
-      messages = [...messages, { role: 'assistant', content: "Sorry, something went wrong. Please try again." }];
+      console.error('Error sending message:', error);
+      messages = [...messages, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.', timestamp }];
     } finally {
-      isSending = false; // Re-enable the send button
-      isTyping = false; // Hide typing indicator
-      userInput = ''; // Clear the input box
+      isSending = false;
+      isTyping = false;
+      userInput = '';
     }
   }
 </script>
 
-<div class="chat-container">
-  <!-- Chat Messages -->
-  <div class="messages">
+<svelte:head>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: linear-gradient(to bottom, #1A2634, #2A3A4A); /* Gradient background */
+    }
+  </style>
+</svelte:head>
+
+<div class="chat-container flex flex-col h-screen max-w-2xl mx-auto bg-gradient-to-b from-dark-teal-top to-dark-teal-bottom">
+  <!-- Header -->
+  <div class="header flex justify-between items-center p-4 bg-transparent border-b border-gray-600">
+    <div>
+      <h1 class="text-white text-lg font-semibold">John AI </h1>
+      <p class="text-gray-400 text-sm">Say hi to him or something...</p>
+    </div>
+  </div>
+
+  <!-- Messages Section -->
+  <div class="messages flex-1 overflow-y-auto p-4">
     {#each messages as message}
-      <div class="message {message.role}">
-        {message.content}
+      <div class="message-wrapper mb-4">
+        <div
+          class="message p-3 rounded-lg"
+          class:user="{message.role === 'Master'}"
+          class:assistant="{message.role === 'assistant'}"
+        >
+          {message.content}
+        </div>
+        <div class="timestamp text-gray-400 text-xs mt-1" class:left="{message.role === 'assistant'}" class:right="{message.role === 'Master'}">
+          {message.timestamp}
+        </div>
       </div>
     {/each}
 
-    <!-- Typing Indicator -->
     {#if isTyping}
-      <div class="message assistant typing-indicator">
-        <span>AI is typing...</span>
+      <div class="message-wrapper mb-4">
+        <div class="message assistant p-3 rounded-lg max-w-[50%] text-dark-gray italic">
+          AI is thinking and typing...
+        </div>
       </div>
     {/if}
   </div>
 
-  <!-- Input Box and Send Button -->
-  <div class="input-container">
+  <!-- Input Section -->
+  <div class="input-container flex items-center gap-2 p-4 bg-transparent border-t border-gray-600">
     <input
       bind:value={userInput}
-      placeholder="Type your message..."
+      placeholder="Ask me anything..."
       on:keydown={(e) => e.key === 'Enter' && sendMessage()}
+      class="flex-1 p-2 bg-input-bg border-none rounded-md text-white placeholder-gray-400 focus:outline-none"
     />
-    <button on:click={sendMessage} disabled={isSending}>
-      {isSending ? 'Sending...' : 'Send'}
+    <button
+      on:click={sendMessage}
+      disabled={isSending}
+      class="p-2 text-white hover:text-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+    >
+      ➤
     </button>
   </div>
 </div>
 
 <style>
-  /* Chat Container */
-  .chat-container {
+  /* Custom color definitions */
+  .bg-gradient-to-b {
+    background: linear-gradient(to bottom, #1A2634, #2A3A4A);
+  }
+  .from-dark-teal-top {
+    background-color: #1A2634;
+  }
+  .to-dark-teal-bottom {
+    background-color: #2A3A4A;
+  }
+  .bg-input-bg {
+    background-color: #3E4A5B; /* Input field background */
+  }
+  .text-dark-gray {
+    color: #333; /* Dark text for AI messages */
+  }
+  .text-gray-400 {
+    color: #9CA3AF; /* Light gray for timestamps and secondary text */
+  }
+  .border-gray-600 {
+    border-color: #4B5E74; /* Slightly lighter than background for borders */
+  }
+  .placeholder-gray-400::placeholder {
+    color: #9CA3AF;
+  }
+
+  /* Message styling */
+  .message-wrapper {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    padding: 20px;
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
-
-  /* Messages Section */
-  .messages {
-    flex: 1;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Individual Messages */
   .message {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 5px;
-    max-width: 70%;
+    word-wrap: break-word;
+    max-width: 50%; /* Shorter width for both user and assistant messages */
   }
-
-  /* User Messages */
   .user {
-    background-color: #86d9ff;
-    align-self: flex-end;
-  }
-
-  /* AI Messages */
-  .assistant {
-    background-color: #9b70ff;
-    align-self: flex-start;
-  }
-
-  /* Typing Indicator */
-  .typing-indicator {
-    font-style: italic;
-    color: #666;
-  }
-
-  /* Input Container */
-  .input-container {
-    display: flex;
-    gap: 10px;
-  }
-
-  /* Input Box */
-  input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-  }
-
-  /* Send Button */
-  button {
-    padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #5A6775; /* Gray for user messages */
     color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
+    margin-left: auto;
+    margin-right: 10px;
+    border-top-right-radius: 0; /* Sharp corner on the right */
   }
-
-  button:hover {
-    background-color: #0056b3;
+  .assistant {
+    background-color: white; /* White for assistant messages */
+    color: #333; /* Dark text for readability */
+    margin-right: auto;
+    margin-left: 10px;
+    border-top-left-radius: 0; /* Sharp corner on the left */
   }
-
-  button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+  .timestamp {
+    font-size: 0.75rem;
+  }
+  .timestamp.left {
+    text-align: left;
+    margin-left: 10px;
+  }
+  .timestamp.right {
+    text-align: right;
+    margin-right: 10px;
   }
 </style>
