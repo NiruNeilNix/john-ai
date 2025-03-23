@@ -3,13 +3,19 @@ import ollama from 'ollama';
 
 // Information about you
 const aboutMe = `
-Master's name is Neil Carlo Nabor (Niru/Nix).
-- Favorite color: teal
-- Hobbies: video games, anime, novels, voice acting
-- Favorite video game: Baldur's Gate 3
+Neil Carlo Nabor:
+- Birthday: January 8th, 2004
+- Age: 21 years old
+- Currently studies at Gordon College
+- His major is Computer Science and he's in his 3rd year
+- Hobbies: Playing video games, reading novels, and voice acting
+- Favorite video games: Baldur's Gate 3, Undertale, and Terraria
 - Favorite band: Panic! At The Disco
+- Latest book read: "The Name of the Wind" by Patrick Rothfuss
 - Likes birds, especially owls
 - Enjoys High Fantasy novels
+- Favorite food: Anything with coconut milk and spicy foods
+- Favorite beverage: Chrysanthemum tea
 `;
 
 // Simple in-memory cache
@@ -27,29 +33,43 @@ export const POST: RequestHandler = async ({ request }) => {
       });
     }
 
+
+    // Handle greetings separately
+    if (message.toLowerCase().includes("hello") || message.toLowerCase().includes("hey")) {
+      return new Response(JSON.stringify({ message: { content: "Greetings! I'm John AI, an AI assistant designed to answer questions about Neil Carlo Nabor. How can I assist you today?" } }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Add the "about me" context to the user's input
     const prompt = `
       ${aboutMe}
       
-      You are an AI assistant meant to answer questions about your Master, Neil (Niru/Nix). Use the information above to answer questions about him. Always refer to him as "Master," "Niru," or "Nix" in your responses.
+      You are an AI assistant designed to answer questions about Neil Carlo Nabor. 'Your master' is refering to Neil
+      You will call him Neil or 'my master'. 
+      You will speak like a knowledgeable assistant.
+      Use the information above to answer questions about him. Be concise (1-5 sentences) and factual. 
+      If the user's question is unrelated to Neil, say "I don't know." 
+      Do not provide unsolicited information or do not make up information.
+      Do not use emojis or slangs
       
       User: ${message}
     `;
 
-    // Use Ollama to generate a response
+    // Use Ollama to generate a response with Llama 2
     const startTime = Date.now();
     const response = await ollama.chat({
-      model: 'deepseek-r1', 
+      model: 'llama2', // Use Llama 2
       messages: [{ role: 'user', content: prompt }],
     });
     const endTime = Date.now();
 
     console.log(`Response time: ${endTime - startTime}ms`);
 
-    // Clean the response by removing <think> tags and their content
-    let cleanedResponse = response.message.content;
-    const thinkRegex = /<think>[\s\S]*?<\/think>/g;
-    cleanedResponse = cleanedResponse.replace(thinkRegex, '').trim();
+    // Clean the response by removing roleplaying elements
+    let cleanedResponse = response.message.content
+      .replace(/\*.*?\*/g, '') // Remove roleplaying actions (e.g., *adjusts glasses*)
+      .trim();
 
     // Cache the response
     responseCache.set(message, cleanedResponse);
