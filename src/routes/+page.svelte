@@ -84,7 +84,7 @@
   <div class="header flex justify-between items-center p-4 bg-transparent border-b border-gray-600">
     <div>
       <h1 class="text-white text-lg font-semibold">John AI </h1>
-      <p class="text-gray-400 text-sm">Say hi to him or something...</p>
+      <p class="text-gray-400 text-sm">Supposed CEO of Artificial Intelligence </p>
     </div>
   </div>
 
