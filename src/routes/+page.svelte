@@ -16,8 +16,8 @@
     messages = [
       {
         role: 'assistant',
-        content: 'Greetings! I am your AI assistant. How can I assist you today?',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 15.03.25',
+        content: 'Yahoo! My name is John AI. Here to answer inquiries about my creator/master, Neil. How may I help you today, gang? My master taught me to say that.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 24.03.25',
       },
     ];
   });
@@ -28,11 +28,14 @@
     isSending = true;
     isTyping = true;
 
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 15.03.25';
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 24.03.25';
 
     try {
       // Add user's message to the chat
-      messages = [...messages, { role: 'Master', content: userInput, timestamp }];
+      messages = [...messages, { role: 'user', content: userInput, timestamp }];
+
+      // Log the request
+      console.log('Sending POST to /api/chat with message:', userInput);
 
       // Send the user's message to the backend
       const response = await fetch('/api/chat', {
@@ -43,11 +46,14 @@
         }),
       });
 
+      console.log('Response status:', response.status);
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('Received response data:', data);
       const aiMessage = data.message.content;
 
       // Add AI's response to the chat
@@ -94,12 +100,12 @@
       <div class="message-wrapper mb-4">
         <div
           class="message p-3 rounded-lg"
-          class:user="{message.role === 'Master'}"
+          class:user="{message.role === 'user'}"
           class:assistant="{message.role === 'assistant'}"
         >
           {message.content}
         </div>
-        <div class="timestamp text-gray-400 text-xs mt-1" class:left="{message.role === 'assistant'}" class:right="{message.role === 'Master'}">
+        <div class="timestamp text-gray-400 text-xs mt-1" class:left="{message.role === 'assistant'}" class:right="{message.role === 'user'}">
           {message.timestamp}
         </div>
       </div>
@@ -108,7 +114,7 @@
     {#if isTyping}
       <div class="message-wrapper mb-4">
         <div class="message assistant p-3 rounded-lg max-w-[50%] text-dark-gray italic">
-          AI is thinking and typing...
+          Hold up a sec, John is cooking up a response..
         </div>
       </div>
     {/if}

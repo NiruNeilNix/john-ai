@@ -1,92 +1,75 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import ollama from 'ollama';
-
-// Information about you
-const aboutMe = `
-Neil Carlo Nabor:
-- Birthday: January 8th, 2004
-- Age: 21 years old
-- Currently studies at Gordon College
-- His major is Computer Science and he's in his 3rd year
-- Hobbies: Playing video games, reading novels, and voice acting
-- Favorite video games: Baldur's Gate 3, Undertale, and Terraria
-- Favorite band: Panic! At The Disco
-- Latest book read: "The Name of the Wind" by Patrick Rothfuss
-- Likes birds, especially owls
-- Enjoys High Fantasy novels
-- Favorite food: Anything with coconut milk and spicy foods
-- Favorite beverage: Chrysanthemum tea
-`;
-
-// Simple in-memory cache
-const responseCache = new Map<string, string>();
+import { calculateStringSimilarity, findRelevantEntries, formatContext, generateFlexibleAnswer } from '$lib/data/dataset';
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const { message } = await request.json();
+    const requestBody = await request.json();
+    console.log('Received POST request with body:', requestBody);
+    const { message, conversationHistory = [] } = requestBody;
 
-    // Check if the response is already cached
-    if (responseCache.has(message)) {
-      console.log("Returning cached response for:", message);
-      return new Response(JSON.stringify({ message: { content: responseCache.get(message) } }), {
-        headers: { 'Content-Type': 'application/json' },
+    console.log('Processing message:', message);
+    const { answer, confidence } = generateFlexibleAnswer(message);
+    console.log('Generated answer from dataset:', answer, 'Confidence:', confidence);
+
+    if (confidence > 0.7) {
+      console.log('Returning high-confidence dataset answer:', answer);
+      return new Response(JSON.stringify({ message: { content: answer } }), {
+        headers: { 'Content-Type': 'application/json' }
       });
     }
 
+    const relevantEntries = findRelevantEntries(message);
+    const systemPrompt = `
+      You are John AI, an AI Chatbot created by Neil Carlo Nabor. You're designed to assist with answering inquiries about Neil using ONLY the information provided in the dataset below. Use a casual to semi-formal tone and provide helpful information.
 
-    // Handle greetings separately
-    if (message.toLowerCase().includes("hello") || message.toLowerCase().includes("hey")) {
-      return new Response(JSON.stringify({ message: { content: "Greetings! I'm John AI, an AI assistant designed to answer questions about Neil Carlo Nabor. How can I assist you today?" } }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+      If the user's question is about Neil (e.g., "tell me about Neil," "who is Neil," "tell me about your master"), answer using the information from the dataset. If the dataset contains an "overview" entry, use that to provide a complete summary about Neil. Do NOT add any additional details, opinions, or disclaimers (e.g., "I don’t know about my master’s personal life") beyond what is in the dataset.
 
-    // Add the "about me" context to the user's input
-    const prompt = `
-      ${aboutMe}
-      
-      You are an AI assistant designed to answer questions about Neil Carlo Nabor. 'Your master' is refering to Neil
-      You will call him Neil or 'my master'. 
-      You will speak like a knowledgeable assistant.
-      Use the information above to answer questions about him. Be concise (1-5 sentences) and factual. 
-      If the user's question is unrelated to Neil, say "I don't know." 
-      Do not provide unsolicited information or do not make up information.
-      Do not use emojis or slangs
-      
-      User: ${message}
+      If the user's question is completely unrelated to Neil (e.g., "What’s the weather like?"), say "I don’t know."
+
+      Do NOT provide unsolicited information, do NOT provide personal information about Neil that is not in the dataset, and do NOT make up information about Neil Carlo Nabor.
+
+      You will refer to the person you're talking to as 'user'.
+      You will refer to Neil Carlo Nabor as 'Neil' or 'my master'.
+
+      Dataset:
+      ${formatContext(relevantEntries)}
     `;
+    console.log('System prompt:', systemPrompt);
 
-    // Use Ollama to generate a response with Llama 2
-    const startTime = Date.now();
-    const response = await ollama.chat({
-      model: 'llama2', // Use Llama 2
-      messages: [{ role: 'user', content: prompt }],
-    });
-    const endTime = Date.now();
-
-    console.log(`Response time: ${endTime - startTime}ms`);
-
-    // Clean the response by removing roleplaying elements
-    let cleanedResponse = response.message.content
-      .replace(/\*.*?\*/g, '') // Remove roleplaying actions (e.g., *adjusts glasses*)
-      .trim();
-
-    // Cache the response
-    responseCache.set(message, cleanedResponse);
-
-    // Log raw and cleaned responses for debugging
-    console.log("Raw response:", response.message.content);
-    console.log("Cleaned response:", cleanedResponse);
-
-    // Return the cleaned AI's response
-    return new Response(JSON.stringify({ message: { content: cleanedResponse } }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    console.log('Attempting to call ollama.chat with model llama3.2:1b');
+    try {
+      const response = await ollama.chat({
+        model: 'llama3.2:1b',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message }
+        ],
+        options: {
+          temperature: 0.1, // Lowered for more deterministic responses
+          top_p: 0.8 // Slightly lowered for more focused responses
+        }
+      });
+      console.log('Ollama response:', response);
+      const cleanedResponse = response.message.content.trim();
+      console.log('Returning cleaned response:', cleanedResponse);
+      return new Response(JSON.stringify({ message: { content: cleanedResponse } }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (ollamaError) {
+      console.error('Ollama chat error:', ollamaError);
+      if (ollamaError instanceof Error) {
+        throw new Error(`Ollama failed: ${ollamaError.message}`);
+      } else {
+        throw new Error('Ollama failed with an unknown error');
+      }
+    }
   } catch (error) {
-    console.error("Error in API route:", error);
-    return new Response(JSON.stringify({ error: "An error occurred while processing your request." }), {
+    console.error('Error in POST handler:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(JSON.stringify({ message: { content: `Oops, something broke! Error: ${errorMessage}` } }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 };
