@@ -34,9 +34,6 @@
       // Add user's message to the chat
       messages = [...messages, { role: 'user', content: userInput, timestamp }];
 
-      // Log the request
-      console.log('Sending POST to /api/chat with message:', userInput);
-
       // Send the user's message to the backend
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -46,14 +43,11 @@
         }),
       });
 
-      console.log('Response status:', response.status);
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Received response data:', data);
       const aiMessage = data.message.content;
 
       // Add AI's response to the chat
@@ -114,7 +108,7 @@
     {#if isTyping}
       <div class="message-wrapper mb-4">
         <div class="message assistant p-3 rounded-lg max-w-[50%] text-dark-gray italic">
-          Hold up a sec, John is cooking up a response..
+          Hold up a sec.. John is cooking up a response..
         </div>
       </div>
     {/if}
