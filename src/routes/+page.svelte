@@ -17,7 +17,7 @@
       {
         role: 'assistant',
         content: 'Yahoo! My name is John AI. Here to answer inquiries about my creator/master, Neil. How may I help you today, gang? My master taught me to say that.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 24.03.25',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 25.03.25',
       },
     ];
   });
@@ -28,7 +28,7 @@
     isSending = true;
     isTyping = true;
 
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 24.03.25';
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - 25.03.25';
 
     try {
       // Add user's message to the chat
