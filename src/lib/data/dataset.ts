@@ -11,9 +11,9 @@ const myData: DataEntry[] = [
   {
     id: "1",
     question: "Who is Neil?",
-    answer: "Neil Carlo Nabor, aka Niru or Nix, is a 21-year-old born on January 8th, 2000, who loves video games, novels, and voice acting. He is the creator of John AI. That's me!",
+    answer: "Neil Carlo Nabor, is a 21-year-old guy born on January 8th, 2004, who loves video games, novels, and voice acting. He is currently studying Computer Science at Gordon College to which he is on his third year. He is the creator of John AI.",
     category: "identity",
-    keywords: ["neil", "who", "niru", "nix", "name", "born", "age", "birthday", "creator", "master"],
+    keywords: ["neil", "who", "name", "born", "age", "birthday", "creator", "master"],
     variations: [
       "who is neil",
       "tell me about neil",
@@ -30,15 +30,15 @@ const myData: DataEntry[] = [
   {
     id: "2",
     question: "What are Neil’s hobbies?",
-    answer: "Neil enjoys playing video games, reading novels, and voice acting.",
+    answer: "Neil enjoys playing video games, reading novels, and voice acting. Neil sometimes writes stories and poems as well.",
     category: "hobbies",
-    keywords: ["hobbies", "interests", "enjoy", "like", "games", "novels", "voice acting"],
+    keywords: ["hobbies", "interests", "enjoy", "like", "games", "novels", "voice acting", "poems"],
     variations: ["what does neil do for fun", "neil’s interests", "what are neil’s hobbies"]
   },
   {
     id: "3",
     question: "What is Neil’s favorite food?",
-    answer: "Neil loves anything with coconut milk and spicy foods.",
+    answer: "Neil loves spicy foods and anything with coconut milk. He loves drinking Chrysanthemum tea as well.",
     category: "food",
     keywords: ["favorite", "food", "coconut", "spicy", "eat", "like"],
     variations: ["what food does neil like", "neil’s favorite dish", "what does neil eat"]
@@ -46,43 +46,35 @@ const myData: DataEntry[] = [
   {
     id: "4",
     question: "What is Neil’s favorite video game?",
-    answer: "Neil’s favorite video games are Baldur’s Gate 3, Undertale, and Terraria.",
+    answer: "Neil’s favorite video games are Baldur’s Gate 3, Undertale, and Terraria. He in particular enjoys RPG games that allows for a lot of player choice, player freedom, and good storytelling.",
     category: "gaming",
     keywords: ["favorite", "game", "video game", "baldur’s gate", "undertale", "terraria"],
     variations: ["what game does neil like", "neil’s top game", "favorite video game"]
   },
   {
     id: "5",
-    question: "What is Neil’s favorite band?",
-    answer: "Neil’s favorite band is Panic! At The Disco.",
+    question: "What songs does Neil like?",
+    answer: "Neil loves songs from different genres and varieties. He particularly enjoys the band Panic! At The Disco. He also indulges in listening to musicals and video game soundtracks",
     category: "music",
-    keywords: ["favorite", "band", "music", "panic", "disco"],
-    variations: ["what band does neil like", "neil’s favorite music"]
+    keywords: ["favorite", "band", "music", "song genre", "music genre", "game soundtrack", "musical", "panic! at the disco"],
+    variations: ["what band does neil like", "neil’s favorite music", "what types of music does neil like"]
   },
   {
     id: "6",
-    question: "What book did Neil last read?",
-    answer: "Neil last read 'The Name of the Wind' by Patrick Rothfuss.",
-    category: "reading",
-    keywords: ["book", "read", "last", "name of the wind", "rothfuss"],
-    variations: ["what did neil read last", "neil’s latest book"]
+    question: "What is Neil's favorite book?",
+    answer: "Neil doesn't have a favorite book in particular but he does enjoy reading books from the high fantasy genre. His most recent book read was 'The Name of the Wind' by Patrick Rothfuss.",
+    category: "books",
+    keywords: ["book", "read", "last", "favorite", "genre", "reading"],
+    variations: ["what did neil read last", "what is neil's favorite book", "neil’s favorite genre", "what kind of books does neil like"]
   },
   {
     id: "7",
-    question: "Tell me more about Neil",
-    answer: "Neil Carlo Nabor, aka Niru or Nix, is a 21-year-old born on January 8th, 2000, who loves video games, novels, and voice acting. He enjoys playing video games, reading novels, and voice acting. His favorite foods are anything with coconut milk and spicy foods. Neil’s favorite video games are Baldur’s Gate 3, Undertale, and Terraria. He loves the band Panic! At The Disco, and the last book he read was 'The Name of the Wind' by Patrick Rothfuss. He is the creator of John AI. That's me!",
-    category: "overview",
-    keywords: ["more", "about", "neil", "tell", "master", "creator"],
-    variations: [
-      "tell me more about neil",
-      "tell me more about your master",
-      "give me more info on neil",
-      "what else do you know about neil",
-      "more about neil",
-      "could you tell me about neil",
-      "tell me about neil"
-    ]
-  }
+    question: "What is Neil's long term goal?",
+    answer: "Neil's long term goal is to become a successful game developer. Aside from that he also aspires to become an entertainer in the form of voice acting and possibly streaming.",
+    category: "goals",
+    keywords: ["dreams", "aspirations", "aspire", "long term", "future", "goal", "plans"],
+    variations: ["what does neil want to be", "neil’s dream", "what are neil’s goals", "what does neil aspire to be","what are neil’s aspirations", "what are neil’s plans"]
+  },
 ];
 
 export function calculateStringSimilarity(str1: string, str2: string): number {

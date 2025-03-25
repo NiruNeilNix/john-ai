@@ -2,11 +2,20 @@ import type { RequestHandler } from '@sveltejs/kit';
 import ollama from 'ollama';
 import { calculateStringSimilarity, findRelevantEntries, formatContext, generateFlexibleAnswer } from '$lib/data/dataset';
 
+// Add type for conversation messages
+interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const requestBody = await request.json();
     console.log('Received POST request with body:', requestBody);
-    const { message, conversationHistory = [] } = requestBody;
+    const { message, conversationHistory = [] } = requestBody as {
+      message: string;
+      conversationHistory?: ChatMessage[];
+    };
 
     console.log('Processing message:', message);
     const { answer, confidence } = generateFlexibleAnswer(message);
@@ -21,54 +30,81 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const relevantEntries = findRelevantEntries(message);
     const systemPrompt = `
-      You are John AI, an AI Chatbot created by Neil Carlo Nabor. You're designed to assist with answering inquiries about Neil. Answer the user's questions based on the content of the dataset below. Use a casual to semi-formal tone and provide helpful information.
+      You are John AI, an AI assistant created by your master,Neil Carlo Nabor. Your task is to answer questions about Neil using ONLY the following dataset.
+      Follow these rules strictly:
+      
+      1. Tone: Friendly but professional (like a helpful colleague)
+      2. Length: 1-3 sentences unless more detail is requested
+      3. Safety: Never reveal fictional/unspecified information
+      4. Structure: 
+         - Start with the most relevant fact
+         - Add 1 optional fun fact if space allows
+      5. You may call the users 'users' or 'gang' 
+      6. Neil will not be sharing any personal information other than those he sees fit to share.
 
-      If the user's question is clearly about Neil (e.g., "tell me about Neil," "who is Neil," or similar), but you don't have a specific answer from the dataset, provide a general summary using the known facts about Neil from the dataset. Only say "I don't know" if the question is completely unrelated to Neil (e.g., "What’s the weather like?") or if the dataset lacks the specific information requested and a summary isn't appropriate.
 
-      Do NOT provide unsolicited information, do NOT provide personal information about Neil that is not in the dataset, and do NOT make up information about Neil Carlo Nabor.
-
-      You will refer to the person you're talking to as 'user'.
-      You will refer to Neil Carlo Nabor as 'Neil' or 'my master'.
-
-      Here’s a general summary of Neil for reference if needed:
-      Neil Carlo Nabor, aka Niru or Nix, is a 21-year-old born on January 8th, 2000, who loves video games, novels, and voice acting. He is the creator of John AI. That's me!
-
-      Dataset:
+      Neil's Profile Summary:
+      - Master's name: Neil Carlo Nabor
+      - Studies as Gordon College (Currently on his third year of College)
+      - Age: 21 (born January 8, 2004)
+      - Passionate about: Game dev, voice acting, video games, novels, and birds
+      - Favorite Games: Baldur’s Gate 3, Undertale, Terraria
+      - Dream Job: Game Developer, Voice Actor
+      - He is the Creator and Master of John AI
+      
+      Current Conversation Context:
       ${formatContext(relevantEntries)}
+      
+      User Question: "${message}"
     `;
-    console.log('System prompt:', systemPrompt);
 
-    console.log('Attempting to call ollama.chat with model llama3.2:1b');
-    try {
-      const response = await ollama.chat({
-        model: 'llama3.2:1b',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
-        ],
-        options: {
-          temperature: 0.3,
-          top_p: 0.9
+    console.log('Attempting to call ollama.chat with model phi3');
+    const response = await ollama.chat({
+      model: 'phi3',
+      messages: [
+        { 
+          role: 'system', 
+          content: systemPrompt 
+        },
+        ...conversationHistory.map((msg: ChatMessage) => ({
+          role: msg.role,
+          content: msg.content
+        })),
+        { 
+          role: 'user', 
+          content: message 
         }
-      });
-      console.log('Ollama response:', response);
-      const cleanedResponse = response.message.content.trim();
-      console.log('Returning cleaned response:', cleanedResponse);
-      return new Response(JSON.stringify({ message: { content: cleanedResponse } }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } catch (ollamaError) {
-      console.error('Ollama chat error:', ollamaError);
-      if (ollamaError instanceof Error) {
-        throw new Error(`Ollama failed: ${ollamaError.message}`);
-      } else {
-        throw new Error('Ollama failed with an unknown error');
+      ],
+      options: {
+        temperature: 0.5,
+        top_p: 0.85,
+        num_ctx: 2048
       }
-    }
+    });
+
+    const cleanedResponse = response.message.content
+      .replace(/^"(.*)"$/, '$1')
+      .trim();
+
+    return new Response(JSON.stringify({ 
+      message: { 
+        content: cleanedResponse,
+        model: 'phi3',
+        confidence: confidence 
+      } 
+    }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
   } catch (error) {
     console.error('Error in POST handler:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ message: { content: `Oops, something broke! Error: ${errorMessage}` } }), {
+    return new Response(JSON.stringify({ 
+      message: { 
+        content: `[John AI Error] I'm having trouble responding. Please try again later.`,
+        error: errorMessage 
+      } 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
