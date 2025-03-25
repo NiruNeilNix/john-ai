@@ -1,5 +1,5 @@
-# sv
-
+# JOHN AI THE CEO OF AI [supposedly] (real, not clickbait)
+# JohnAI is a Chatbot AI created for my Intelligent Systems course midterm project
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
 ## Creating a project
