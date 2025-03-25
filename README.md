@@ -8,5 +8,5 @@ Purpose: Answer inquiries regarding its creator (Me)
 
 
 
-**WARNING: JohnAI has social anxeity so he probably won't respond properly all the time :( He's trying**
+**WARNING: JohnAI has social anxiety so he probably won't respond properly all the time :( He's trying**
 
