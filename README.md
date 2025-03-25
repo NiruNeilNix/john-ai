@@ -2,7 +2,9 @@
 
 JohnAI is a Chatbot AI created for my Intelligent Systems course midterm project
 
-Powered by: Powered by: Phi-3 AI model, Svelte, Ollama, and my hopes and dreams.
+Powered by: Phi-3 AI model, Svelte, Ollama, and my hopes and dreams.
+
+
 Purpose: Answer inquiries regarding its creator (Me)
 
 
