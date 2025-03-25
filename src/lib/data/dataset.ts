@@ -62,7 +62,7 @@ const myData: DataEntry[] = [
   {
     id: "6",
     question: "What is Neil's favorite book?",
-    answer: "Neil doesn't have a favorite book in particular but he does enjoy reading books from the high fantasy genre. His most recent book read was 'The Name of the Wind' by Patrick Rothfuss.",
+    answer: "Neil doesn't have a favorite book in particular but he does enjoy reading books from the high fantasy genre. His most recent book read was 'The Name of the Wind' by Patrick Rothfuss. He also plans on writing his own novel in the future.",
     category: "books",
     keywords: ["book", "read", "last", "favorite", "genre", "reading"],
     variations: ["what did neil read last", "what is neil's favorite book", "neil’s favorite genre", "what kind of books does neil like"]
@@ -75,6 +75,23 @@ const myData: DataEntry[] = [
     keywords: ["dreams", "aspirations", "aspire", "long term", "future", "goal", "plans"],
     variations: ["what does neil want to be", "neil’s dream", "what are neil’s goals", "what does neil aspire to be","what are neil’s aspirations", "what are neil’s plans"]
   },
+  {
+    id: "8",
+    question: "Where does Neil want to live in the future?",
+    answer: "Neil has expressed interest in living in a place with a colder climate. He wants to move to Europe at some point in the future although he's not yet sure where in Europe because he loves the culture and aesthetics",
+    category: "living",
+    keywords: ["live", "future", "place", "location", "europe", "cold", "climate", "weather", "culture", "aesthetics"],
+    variations: ["where does neil want to live", "neil’s future home", "where does neil want to move", "does neil want to move", "does neil ever want to move out"]
+  },
+  {
+    id: "9",
+    question: "What kind of person is Neil?",
+    answer: "Neil is a pretty chill dude, a bit too silent sometimes that you might forget that he's there. An eccentric and whimsical fella. Mostly afraid of to approach people first unless it's absolutely needed. He's a bit of a big-time procrastinator",
+    category: "personality",
+    keywords: ["person", "character", "personality", "traits", "chill", "silent", "procrastinator", "afraid", "approach", "people"],
+    variations: ["what is neil like", "neil’s personality", "describe neil", "what are neil’s traits", "what kind of person is your master?"]
+  },
+  
 ];
 
 export function calculateStringSimilarity(str1: string, str2: string): number {
